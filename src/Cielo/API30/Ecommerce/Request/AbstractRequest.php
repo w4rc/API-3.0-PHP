@@ -49,7 +49,7 @@ abstract class AbstractRequest
     {
         $headers = [
             'Accept: application/json',
-            'Accept-Encoding: gzip',
+            //'Accept-Encoding: gzip',
             'User-Agent: CieloEcommerce/3.0 PHP SDK',
             'MerchantId: ' . $this->merchant->getId(),
             'MerchantKey: ' . $this->merchant->getKey(),
@@ -59,7 +59,12 @@ abstract class AbstractRequest
         $curl = curl_init($url);
 
         curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		if (YII_ENV_DEV) {
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		} else {
+			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		}
+		curl_setopt($curl, CURLOPT_ENCODING, "");
 
         switch ($method) {
             case 'GET':
