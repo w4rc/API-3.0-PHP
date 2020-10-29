@@ -109,7 +109,9 @@ abstract class AbstractRequest
         if (curl_errno($curl)) {
             $message = sprintf('cURL error[%s]: %s', curl_errno($curl), curl_error($curl));
 
-            $this->logger->error($message);
+			if ($this->logger !== null) {
+				$this->logger->error($message);
+			}
 
             throw new \RuntimeException($message);
         }
@@ -140,11 +142,17 @@ abstract class AbstractRequest
                 $exception = null;
                 $response  = json_decode($responseBody);
 
-                foreach ($response as $error) {
-                    $cieloError = new CieloError($error->Message, $error->Code);
-                    $exception  = new CieloRequestException('Request Error', $statusCode, $exception);
-                    $exception->setCieloError($cieloError);
-                }
+				if (!is_array($response)) {
+					$cieloError = new CieloError($response->Message, '');
+					$exception  = new CieloRequestException('Request Error', $statusCode, $exception);
+					$exception->setCieloError($cieloError);
+				} else {
+					foreach ($response as $error) {
+						$cieloError = new CieloError($error->Message, $error->Code);
+						$exception  = new CieloRequestException('Request Error', $statusCode, $exception);
+						$exception->setCieloError($cieloError);
+					}
+				}
 
                 throw $exception;
             case 404:
